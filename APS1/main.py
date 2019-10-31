@@ -36,14 +36,14 @@ async def post_task():
 
 # /task/<id>
 @app.get("/task/{id}")
-async def get_task_id(id):
-    res = [res for res in test if res["id"] == int(id)]
+async def get_task_id(id: int):
+    res = [res for res in test if res["id"] == id]
     return res
 
 @app.put("/task/{id}")
-async def put_task_id(id):
+async def put_task_id(id: int):
     test.append({
-        'id': int(id),
+        'id': id,
         'title': u'Oh hey',
         'description': u"Working too, but with an obvious logical problem =O nevermind, it's just a test",
         'done': True }
@@ -51,8 +51,8 @@ async def put_task_id(id):
     return test
 
 @app.delete("/task/{id}")
-async def delete_task(id):
-    res = [res for res in test if res["id"] == int(id)]
+async def delete_task(id: int):
+    res = [res for res in test if res["id"] == id]
     test.remove(res[0])
     return test
 
