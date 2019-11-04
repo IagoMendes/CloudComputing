@@ -4,15 +4,15 @@ This repository was created during Cloud Computing study @ Insper (www.insper.ed
 
 ## APS 1: REST service using FastAPI
 
-In this activity, we were instructed to create a RESTful webserver with 6 endpoints:
-- /task/ - *GET*: lists all tasks;
-- /task/ - *POST*: adds a new tasks;
+In this activity, I created a simple RESTful webserver with 6 endpoints:
+- /task - *GET*: lists all tasks;
+- /task - *POST*: adds a new tasks;
 - /task/<id> - *GET*: lists task with certain id;
 - /task/<id> - *PUT*: updates task with certain id;
 - /task/<id> - *DELETE*: deletes task with certain id;
-- /healthcheck/: status 200 without text;
+- /healthcheck: status 200 without text;
   
-How to use:
+How to run:
 ```bash
  uvicorn main:app --reload
 ```
