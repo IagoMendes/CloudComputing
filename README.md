@@ -16,7 +16,7 @@ How to use:
 ```bash
  uvicorn main:app --reload
 ```
-All tests were made with Postman.
+All tests were made with Postman and FastAPI's interface.
 
 ## APS 2:
 
