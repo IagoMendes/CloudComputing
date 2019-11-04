@@ -16,7 +16,7 @@ How to use:
 ```bash
  uvicorn main:app --reload
 ```
-All tests were made with Postman.
+All tests were made with Postman and FastAPI's interface.
 
 ## APS 2:
 
@@ -26,6 +26,3 @@ All tests were made with Postman.
 
 ## Project:
 
-
-## Just so you know: 
-  All folders named as APS# were used to test something (as described above), they have logical mistakes that weren't fixed because this wasn't the main purpose of the activity.
