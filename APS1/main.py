@@ -37,6 +37,6 @@ async def delete_task(id: int):
         raise HTTPException(status_code=404, detail='Unable to delete, task not found')
 
 # /healthcheck (only returns status 200)
-@app.get("/healthcheck")
+@app.get("/healthcheck", status_code=200)
 async def health_check():
-    raise HTTPException(status_code=200)
+    return
