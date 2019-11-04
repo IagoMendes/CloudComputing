@@ -1,23 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
 app = FastAPI()
+test = dict()
 
-test = [
-    {
-        'id': 1,
-        'title': u'Buy groceries',
-        'description': u'Milk, Cheese, Pizza, Fruit, Tylenol',
-        'done': False },
-    {
-        'id': 2,
-        'title': u'Learn Python',
-        'description': u'Need to find a good Python tutorial on the web',
-        'done': False }
-]
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+class Task(BaseModel):
+    name: str
+    description: str
 
 # /task
 @app.get("/task")
@@ -25,38 +14,29 @@ async def get_task():
     return test
 
 @app.post("/task")
-async def post_task():
-    test.append({
-        'id': test[len(test)-1]["id"] + 1,
-        'title': u'Oh hey',
-        'description': u'This is working!',
-        'done': True }
-    )
-    return test
+async def post_task(task: Task):
+    test[len(test.keys())] = task
 
 # /task/<id>
 @app.get("/task/{id}")
 async def get_task_id(id: int):
-    res = [res for res in test if res["id"] == id]
-    return res
+    return test.get(id)
 
 @app.put("/task/{id}")
-async def put_task_id(id: int):
-    test.append({
-        'id': id,
-        'title': u'Oh hey',
-        'description': u"Working too, but with an obvious logical problem =O nevermind, it's just a test",
-        'done': True }
-    )
-    return test
-
+async def put_task_id(id: int, task: Task):
+    if id in test.keys():
+        test[id] = task
+    else:
+        raise HTTPException(status_code=404, detail='Task not found')
+    
 @app.delete("/task/{id}")
 async def delete_task(id: int):
-    res = [res for res in test if res["id"] == id]
-    test.remove(res[0])
-    return test
+    if id in test.keys():
+        test.pop(id)
+    else:
+        raise HTTPException(status_code=404, detail='Unable to delete, task not found')
 
 # /healthcheck (only returns status 200)
 @app.get("/healthcheck")
 async def health_check():
-    return 
+    raise HTTPException(status_code=200)
