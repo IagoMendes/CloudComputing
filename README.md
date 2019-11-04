@@ -21,6 +21,11 @@ All tests were made with Postman and FastAPI's interface.
 ## APS 2:
 
 
+```bash
+ echo "export APS1_SERVER_ADDRESS=http://127.0.0.1:8000" >> .env
+ source .env
+```
+
 ## APS 3:
 
 
