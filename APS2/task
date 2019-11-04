@@ -1,0 +1,71 @@
+#!/usr/bin/python3
+import os
+import sys
+import json
+import requests
+from pprint import pprint
+
+address = "http://127.0.0.1:8000"
+
+def taskList():
+    response = requests.get(address + "/task")
+    response_dict = json.loads(response.text) 
+    pprint(response_dict)
+
+def taskIdList(id):
+    response = requests.get(address + "/task/" + str(id))
+    response_dict = json.loads(response.text) 
+    pprint(response_dict)
+
+def taskAdd(name, description):
+    requests.post(address + "/task", json={'name':name, 'description':description})
+
+def taskUpdate(id, name, description):
+    requests.put(address + "/task/" + str(id), json={'name':name, 'description':description})
+
+def taskDelete(id):
+    requests.delete(address + "/task/" + str(id))
+
+def help():
+    print('''\
+    $ task list
+    $ task search <id>
+    $ task add <name> <description>
+    $ task update <id> <name> <description>
+    $ task delete <id>''')
+
+
+if __name__ == "__main__":
+    
+    size = len(sys.argv)-1
+
+    if size > 0:
+        if sys.argv[1] == "list":
+            taskList()
+
+        elif sys.argv[1] == "search":
+            if sys.argv[2]:
+                taskIdList(sys.argv[2])
+            else:
+                print("Invalid entry!")
+
+        elif sys.argv[1] == "add":
+            try:
+                taskAdd(sys.argv[2], sys.argv[3])
+            except:
+                print("Invalid entry!")
+        
+        elif sys.argv[1] == "update":
+            try:
+                taskUpdate(sys.argv[2], sys.argv[3], sys.argv[4])
+            except:
+                print("Invalid entry!")
+        
+        elif sys.argv[1] == "delete":
+            if sys.argv[2]:
+                taskDelete(sys.argv[2])
+            else:
+                print("Invalid entry!")
+                
+    else:
+        help()
