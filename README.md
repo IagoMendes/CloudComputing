@@ -18,12 +18,16 @@ How to run:
 ```
 All tests were made with Postman and FastAPI's interface.
 
-## APS 2:
+## APS 2: Creating a Client
 
+Using the webserver created in APS1, created a python script for a client with the same endpoints as previously. The commands are the following:
 
 ```bash
- echo "export APS1_SERVER_ADDRESS=http://127.0.0.1:8000" >> .env
- source .env
+  $ task list
+  $ task search <id>
+  $ task add <name> <description>
+  $ task update <id> <name> <description>
+  $ task delete <id>
 ```
 
 ## APS 3:
