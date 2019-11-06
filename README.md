@@ -23,14 +23,14 @@ All tests were made with Postman and FastAPI's interface.
 Using the webserver created in APS1, created a python script for a client with the same endpoints as previously. The commands are the following:
 
 ```bash
-  $ task list
-  $ task search <id>
-  $ task add <name> <description>
-  $ task update <id> <name> <description>
-  $ task delete <id>
+  $ ./task list
+  $ ./task search <id>
+  $ ./task add <name> <description>
+  $ ./task update <id> <name> <description>
+  $ ./task delete <id>
 ```
 
-## APS 3:
+## APS 3: Managing instances in AWS
 
 
 ## Project:
