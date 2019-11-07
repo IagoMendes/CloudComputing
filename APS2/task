@@ -28,11 +28,11 @@ def taskDelete(id):
 
 def help():
     print('''\
-    $ task list
-    $ task search <id>
-    $ task add <name> <description>
-    $ task update <id> <name> <description>
-    $ task delete <id>''')
+    $ ./task list
+    $ ./task search <id>
+    $ ./task add <name> <description>
+    $ ./task update <id> <name> <description>
+    $ ./task delete <id>''')
 
 
 if __name__ == "__main__":
