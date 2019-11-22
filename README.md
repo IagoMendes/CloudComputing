@@ -30,8 +30,5 @@ Using the webserver created in APS1, created a python script for a client with t
   $ ./task delete <id>
 ```
 
-## APS 3: Managing instances in AWS
-
-
 ## Project:
 
