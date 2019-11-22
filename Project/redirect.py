@@ -4,8 +4,8 @@ import requests
 import os 
 import json
 
-# ip = os.getenv("redirectIp")
-ip = '3.17.154.90'
+ip = os.getenv("redirectIp")
+
 address = 'http://' + ip + ':8000'
 app = FastAPI()
 
