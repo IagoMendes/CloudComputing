@@ -11,8 +11,8 @@ KEY_PAIR_NAME = NAME+"Key"
 KEY_FILE_NAME_OHIO = KEY_PAIR_NAME+"Ohio.pem"
 KEY_FILE_NAME_NORTHVIRGINIA = KEY_PAIR_NAME+"NorthVirginia.pem"
 
-SECURITY_GROUP_NAME = "WebserverSecurityGroup"
-MONGO_SECURITY_GROUP = "MongoSecurityGroup"
+SECURITY_GROUP_NAME = NAME+"SecurityGroup"
+MONGO_SECURITY_GROUP = NAME+"MongoSecurityGroup"
 
 TARGET_GROUP_NAME = NAME+"TargetGroup"
 LOAD_BALANCER_NAME = NAME+"LoadBalancer"
@@ -59,6 +59,7 @@ def deleteSecurityGroup(client, name):
     try: 
         res = client.describe_security_groups(GroupNames=[name])
         try:
+            time.sleep(30)
             res = client.delete_security_group(GroupName=name)
         except ClientError as e:
             print(e)
@@ -68,16 +69,13 @@ def deleteSecurityGroup(client, name):
 
 def createSecurityGroup(client):
     try:
-        group = client.create_security_group(Description= "Cloud Final Project", GroupName=SECURITY_GROUP_NAME)
+        response = client.describe_vpcs()
+        vpcId = response["Vpcs"][0]["VpcId"]
+        group = client.create_security_group(Description= "Cloud Final Project", GroupName=SECURITY_GROUP_NAME, VpcId=vpcId)
 
         try:
             response = client.authorize_security_group_ingress(GroupName=SECURITY_GROUP_NAME,
                         IpPermissions=[
-                            {'IpProtocol': 'tcp', 
-                                'FromPort': 22, 
-                                'ToPort': 22,
-                                'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
-                            },
                             {'IpProtocol': 'tcp', 
                                 'FromPort': 8000, 
                                 'ToPort': 8000,
@@ -87,6 +85,15 @@ def createSecurityGroup(client):
 
         except ClientError as e:
             print(e)
+    
+    except ClientError as e:
+        print(e)
+
+def createSecurityGroup2(client):
+    try:
+        response = client.describe_vpcs()
+        vpcId = response["Vpcs"][0]["VpcId"]
+        group = client.create_security_group(Description= "Cloud Final Project", GroupName=SECURITY_GROUP_NAME, VpcId=vpcId)
     
     except ClientError as e:
         print(e)
@@ -110,14 +117,9 @@ def securityGroupMongoDB(client):
             response = client.authorize_security_group_ingress(GroupName=MONGO_SECURITY_GROUP,
                         IpPermissions=[
                             {'IpProtocol': 'tcp', 
-                                'FromPort': 22, 
-                                'ToPort': 22,
-                                'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
-                            },
-                            {'IpProtocol': 'tcp', 
                                 'FromPort': 27017, 
                                 'ToPort': 27017,
-                                'IpRanges': [{'CidrIp': '172.0.0.0/8'}] # Amazon IPs only
+                                'IpRanges': [{'CidrIp': '172.0.0.0/8'}] # Amazon IPs only, but temporary
                             }]
                         )
             
@@ -193,7 +195,7 @@ def deleteLoadBalancer():
 
         waiter = elClientNv.get_waiter('load_balancers_deleted')
         waiter.wait(LoadBalancerArns=[arn])
-        time.sleep(30)
+        time.sleep(60)
 
     except ClientError as e:
         print("No existing Load Balancer called "+ LOAD_BALANCER_NAME +", skipping.")
@@ -219,7 +221,7 @@ def createLoadBalancer():
     
     waiter = elClientNv.get_waiter('load_balancer_exists')
     waiter.wait(LoadBalancerArns=[ lb['LoadBalancers'][0]['LoadBalancerArn'] ])
-    time.sleep(15)
+    time.sleep(60)
 
     return lb['LoadBalancers'][0]['LoadBalancerArn']
 
@@ -370,6 +372,17 @@ def instanceCommunicationCreate(client, resource, imageName, ip_ohio):
                         ret.append(j)
     
     ip = ret[0]['NetworkInterfaces'][0]['PrivateIpAddresses'][0]["Association"]['PublicIp']
+
+    response = clientOhio.authorize_security_group_ingress(GroupName=SECURITY_GROUP_NAME,
+                        IpPermissions=[
+                            {'IpProtocol': 'tcp', 
+                                'FromPort': 8000, 
+                                'ToPort': 8000,
+                                'IpRanges': [{'CidrIp': ip+'/32'}]
+                            }]
+                        )
+
+    
     return ip
 
 def instanceWebMongoCreate(client, resource, imageName, ip):
@@ -426,10 +439,29 @@ def instanceWebMongoCreate(client, resource, imageName, ip):
                         ret.append(j)
     
     ip = ret[0]['NetworkInterfaces'][0]['PrivateIpAddresses'][0]["Association"]['PublicIp']
+    privateIp = ret[0]['NetworkInterfaces'][0]['PrivateIpAddresses'][0]["PrivateIpAddress"]
+
+    response = clientOhio.authorize_security_group_ingress(GroupName=MONGO_SECURITY_GROUP,
+                        IpPermissions=[
+                            {'IpProtocol': 'tcp', 
+                                'FromPort': 27017, 
+                                'ToPort': 27017,
+                                'IpRanges': [{'CidrIp': privateIp+'/32'}]
+                            }]
+                        )
+    
+    response = clientOhio.revoke_security_group_ingress(GroupName=MONGO_SECURITY_GROUP,
+                        IpPermissions=[
+                            {'IpProtocol': 'tcp', 
+                                'FromPort': 27017, 
+                                'ToPort': 27017,
+                                'IpRanges': [{'CidrIp': '172.0.0.0/8'}]
+                            }]
+                        )
+
     return ip
 
 def instanceMongoCreate(client, resource, imageName):
-    
     inst = resource.create_instances(
             InstanceType='t2.micro', 
             KeyName=KEY_PAIR_NAME,
@@ -468,7 +500,6 @@ def instanceMongoCreate(client, resource, imageName):
                     - sudo sed -i "s/127.0.0.1/0.0.0.0/g" /etc/mongod.conf
                     - sudo service mongod restart''',
             ImageId=imageName
-            #NetworkInterfaces=[{'AssociatePublicIpAddress': False}]
             )
     
 
@@ -531,10 +562,10 @@ def mainOhio(): # Working
     print("Deleting Security Group.")
     deleteSecurityGroup(clientOhio, SECURITY_GROUP_NAME)
     print("Creating Security Group.")
-    createSecurityGroup(clientOhio)
+    createSecurityGroup2(clientOhio)
 
     # Creates security groups for the instance with Mongo
-    print("Creating Mongo's Target Group.")
+    print("Creating Mongo's Security Group.")
     securityGroupMongoDB(clientOhio)
 
     # Creating instances
@@ -565,6 +596,10 @@ def mainNorthVirginia(ip_ohio):
     print("Deleting Target Group.")
     deleteTargetGroup() 
 
+    # Deletes Launch Configuration
+    print("Deleting Launch Configuration.")
+    deleteLaunchConfiguration()
+
     # Finds and deletes existing keypairs
     print("Creating Keypair and saving in "+KEY_PAIR_NAME+"NorthVirginia.pem")
     key = keyPair(clientNv)
@@ -576,10 +611,6 @@ def mainNorthVirginia(ip_ohio):
     new_key.write(key['KeyMaterial'])
     new_key.close()
     os.chmod(KEY_FILE_NAME_NORTHVIRGINIA, 0o400)
-
-    # Deletes Launch Configuration
-    print("Deleting Launch Configuration.")
-    deleteLaunchConfiguration()
 
     # Deletes Security Group
     print("Deleting Security Group.")
@@ -616,7 +647,6 @@ def mainNorthVirginia(ip_ohio):
 
 
 if __name__ == "__main__":
-
     clientOhio = boto3.client('ec2', region_name='us-east-2')
     resourceOhio = boto3.resource('ec2', region_name='us-east-2')
 
