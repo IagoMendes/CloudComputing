@@ -2,7 +2,7 @@
 
 This repository was created during Cloud Computing study @ Insper (www.insper.edu.br). It contains the main individual project and some of the APS (Practical Supervisionised Activities) of this module.
 
-## Project: AWS "Hybrid" Cloud Webserver
+## Project: "Hybrid" Cloud Webserver
 
 The project's original purpose was to create a HC with a private database, but as it wasn't possible, the database part of the project was created in another AWS region.
 
