@@ -119,7 +119,7 @@ def securityGroupMongoDB(client):
                             {'IpProtocol': 'tcp', 
                                 'FromPort': 27017, 
                                 'ToPort': 27017,
-                                'IpRanges': [{'CidrIp': '172.0.0.0/8'}] # Amazon IPs only, but temporary
+                                'IpRanges': [{'CidrIp': '172.0.0.0/8'}]
                             }]
                         )
             
@@ -539,7 +539,7 @@ def createListener(tg, lb):
 # MAIN
 ###############################################################################
 
-def mainOhio(): # Working
+def mainOhio():
     print("------------ Creating Ohio ------------\n")
 
     # Searches for existing instances created with specific keys
